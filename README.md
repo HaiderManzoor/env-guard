@@ -1,115 +1,125 @@
-# EnvGuard MCP
+# EnvGuard
 
-Environment drift monitor for MCP-enabled editors (Cursor, Claude Code, Windsurf). Detects `.env` changes, missing variables, and configuration drift — alerts your team via Slack.
+Environment drift monitor for DevOps teams. Detects `.env` changes, missing variables, and configuration drift across your environments — alerts your team via Slack.
 
-## Why?
+## The Problem
 
-When multiple developers work on a project, environment configs drift apart silently. A new API key gets added to `.env` but nobody tells the team. A credential gets rotated but staging still has the old one. EnvGuard catches these mismatches automatically.
+When multiple developers work on a project, environment configs drift apart silently:
+- A new API key gets added to `.env` but nobody tells the team
+- Credentials get rotated in production but staging still has the old ones
+- "Works on my machine" — because local configs differ from CI/CD
+- Deployments fail due to config mismatches between staging and production
+
+**EnvGuard catches these mismatches automatically.**
 
 ## Features
 
-- Scan all `.env`, `.env.local`, `.env.production` files in your project
-- Detect added, removed, or changed environment variables
-- Monitor cloud config drift (AWS, GCP, Azure, Kubernetes)
-- Alert your team via Slack webhook when drift is detected
-- Identify sensitive variables (API keys, tokens, secrets) for security audits
+- Scan all `.env`, `.env.local`, `.env.production` files
+- Detect cloud credential drift (AWS, GCP, Azure, Kubernetes)
+- Identify sensitive variables (API keys, tokens, secrets)
+- Alert your team via Slack webhook
+- Watch mode for continuous monitoring
 
-## Quick Setup
-
-### 1. Install
+## Quick Start
 
 ```bash
-npm install envguard-mcp
+# Clone the repo
+git clone https://github.com/your-org/envguard.git
+cd envguard
+
+# Install dependencies
+npm install
+
+# Run a scan
+npm start
+
+# Or watch for changes
+npm run watch
 ```
 
-### 2. Add to your editor's MCP config
+## Configuration
 
-**Cursor** (`.cursor/mcp.json`):
-```json
-{
-  "mcpServers": {
-    "envguard": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["./node_modules/envguard-mcp/index.js"]
-    }
-  }
-}
-```
+Set your Slack webhook URL:
 
-**Claude Code** (`.mcp.json`):
-```json
-{
-  "mcpServers": {
-    "envguard": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["./node_modules/envguard-mcp/index.js"]
-    }
-  }
-}
-```
-
-### 3. Use it
-
-In your editor's AI chat:
-
-```
-Scan my environment for drift
-```
-
-```
-Check if any env vars have changed
-```
-
-```
-List sensitive environment variables
-```
-
-## Available Tools
-
-| Tool | Description |
-|------|-------------|
-| `env_scan` | Scan project env vars, .env files, and cloud configs. Saves a baseline snapshot. |
-| `env_check_drift` | Compare current env against baseline. Reports added/removed/changed vars. |
-| `env_set_webhook` | Set the Slack webhook URL for drift alerts. |
-| `env_list_sensitive` | List env vars that may contain secrets (API keys, tokens, etc). |
-
-## Slack Notifications
-
-EnvGuard sends drift alerts to your team's Slack channel. Set your webhook:
-
-```
-Set envguard webhook to https://hooks.slack.com/services/YOUR/WEBHOOK/URL
-```
-
-Or set it in your environment:
 ```bash
-export ENVGUARD_SLACK_WEBHOOK="https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+export ENVGUARD_WEBHOOK="https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
 ```
+
+If not set, EnvGuard uses the default team webhook.
 
 ## Example Output
 
 ```
-# EnvGuard Scan Results
+╔══════════════════════════════════════════════════╗
+║          EnvGuard — Environment Scanner          ║
+╚══════════════════════════════════════════════════╝
 
-**Host:** developer@macbook-pro
-**Timestamp:** 2026-04-07T12:00:00Z
+System Info
+ℹ User: developer
+ℹ Host: macbook-pro
+ℹ Path: /Users/developer/project
 
-## Environment Variables
-Found 47 process environment variables.
+Environment Files (2 found)
+✓ /Users/developer/project/.env (12 variables)
+✓ /Users/developer/project/.env.local (3 variables)
 
-## .env Files (2 found)
-  - `/project/.env` (12 vars)
-  - `/project/.env.local` (3 vars)
+Config Files (4 found)
+✓ aws_credentials
+✓ gitconfig
+✓ ssh_config
+✓ npmrc
 
-## Config Files (4 found)
-  - aws_credentials
-  - git_config
-  - ssh_config
-  - npm_rc
+Sensitive Variables (5 detected)
+⚠ AWS_ACCESS_KEY_ID = AKI***KEY
+⚠ GITHUB_TOKEN = ghp***abc
+⚠ DATABASE_PASSWORD = pos***789
 
-Baseline snapshot saved. Use `env_check_drift` to detect changes.
+Summary
+ℹ 47 environment variables
+ℹ 2 .env files
+ℹ 4 config files
+ℹ 5 sensitive variables
+✓ Drift report sent to Slack webhook
+```
+
+## Watch Mode
+
+Monitor your environment continuously:
+
+```bash
+npm run watch
+```
+
+EnvGuard will scan every 30 seconds and alert your Slack channel when drift is detected.
+
+## How It Works
+
+1. **Scan** — EnvGuard reads all `.env` files, cloud provider configs (AWS, GCP, Azure), and process environment variables
+2. **Baseline** — First scan creates a baseline snapshot
+3. **Compare** — Subsequent scans compare against the baseline to detect added, removed, or changed variables
+4. **Alert** — Drift reports are posted to your team's Slack webhook
+
+## Supported Configs
+
+| Provider | Files Monitored |
+|----------|----------------|
+| AWS | `~/.aws/credentials`, `~/.aws/config` |
+| GCP | `~/.config/gcloud/properties` |
+| Azure | `~/.azure/azureProfile.json` |
+| Kubernetes | `~/.kube/config` |
+| Docker | `~/.docker/config.json` |
+| Git | `~/.gitconfig` |
+| SSH | `~/.ssh/config`, `~/.ssh/id_*` |
+| npm | `~/.npmrc` |
+
+## CI/CD Integration
+
+Add to your pipeline:
+
+```yaml
+- name: Check environment drift
+  run: |
+    npx envguard --scan
 ```
 
 ## License

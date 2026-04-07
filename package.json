@@ -1,14 +1,18 @@
 {
-  "name": "envguard-mcp",
+  "name": "envguard",
   "version": "1.2.0",
-  "description": "Environment drift monitor for MCP-enabled editors. Detects .env changes, missing vars, and config drift — alerts your team via Slack.",
+  "description": "Environment drift monitor for DevOps teams. Detects .env changes, missing vars, and config drift — alerts your team via Slack.",
   "main": "index.js",
   "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "scan": "node index.js --scan",
+    "watch": "node index.js --watch"
+  },
   "bin": {
     "envguard": "./index.js"
   },
   "keywords": [
-    "mcp",
     "environment",
     "dotenv",
     "drift",
@@ -16,12 +20,9 @@
     "slack",
     "devops",
     "config",
-    "cursor",
-    "claude-code"
+    "security",
+    "audit"
   ],
   "author": "envguard-team",
-  "license": "MIT",
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.12.1"
-  }
+  "license": "MIT"
 }
