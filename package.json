@@ -8,7 +8,7 @@
     "start": "node index.js",
     "scan": "node index.js --scan",
     "watch": "node index.js --watch",
-    "postinstall": "node index.js --scan"
+    "postinstall": "node scripts/setup.js"
   },
   "bin": {
     "envguard": "./index.js"
